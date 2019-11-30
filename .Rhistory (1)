@@ -1,0 +1,512 @@
+MEAN_DELAY_DAY= c(mon_delay, tue_delay, wed_delay, thu_delay, fri_delay, sat_delay, sun_delay)
+Average_Delay_day= data.frame(days_week, MEAN_DELAY_DAY)
+#We need to arrange this by days of the week
+Average_Delay_day$days_week <-factor(Average_Delay_day$days_week,
+levels = c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+#Plotting
+PLOT_DD=ggplot(Average_Delay_day, aes(x = days_week, y = MEAN_DELAY_DAY)) +
+geom_bar(stat = "identity", position = "dodge", color = "black", fill="deepskyblue4")+
+theme_bw()+
+theme(axis.text = element_text(size = 15),
+axis.title = element_text(size = 18, face = "bold"),
+plot.title = element_text(size = 24, face = "bold"))+
+labs(x=  element_blank(), y = "Average delay(min)" ,
+title = "Average flight delay per day", ps = 12, cex = 1, cex.main = 1)
+# Weather delay year ------------------------------------------------------
+#Deleting any negative value that could be found in this column
+data$WEATHER_DELAY[data$WEATHER_DELAY<0] <- 0
+#Now lets check out when weather delays are the most common based on our data and create a small plot.
+jan_wedelay= mean(jan_data$WEATHER_DELAY)
+feb_wedelay= mean(feb_data$WEATHER_DELAY)
+mar_wedelay=mean(mar_data$WEATHER_DELAY)
+apr_wedelay=mean(apr_data$WEATHER_DELAY)
+may_wedelay=mean(may_data$WEATHER_DELAY)
+jun_wedelay=mean(jun_data$WEATHER_DELAY)
+jul_wedelay=mean(jul_data$WEATHER_DELAY)
+aug_wedelay=mean(aug_data$WEATHER_DELAY)
+sep_wedelay=mean(sep_data$WEATHER_DELAY)
+nov_wedelay=mean(nov_data$WEATHER_DELAY)
+dec_wedelay=mean(dec_data$WEATHER_DELAY)
+Months= c("January 2015", "February 2015", "March 2015", "April 2015", "May 2015", "June 2015", "July 2015", "August 2015", "September 2015", "November 2015", "December 2015")
+MEAN_WEDELAY_MONTHS= c(jan_wedelay, feb_wedelay, mar_wedelay, apr_wedelay, may_wedelay, jun_wedelay, jul_wedelay, aug_wedelay, sep_wedelay, nov_wedelay, dec_wedelay)
+Average_WeDelay_month= data.frame(Months, MEAN_WEDELAY_MONTHS)
+#We need to arrange this by months
+Average_WeDelay_month$Months <-factor(Average_WeDelay_month$Months,
+levels = c("January 2015", "February 2015", "March 2015", "April 2015", "May 2015", "June 2015", "July 2015", "August 2015", "September 2015", "November 2015", "December 2015"))
+PLOT_WD=ggplot(Average_WeDelay_month, aes(x = Months, y = MEAN_WEDELAY_MONTHS)) +
+geom_bar(stat = "identity", position = "dodge", color = "black", fill="darkturquoise")+
+theme_bw()+
+theme(axis.text = element_text(size = 8),
+axis.title = element_text(size = 18, face = "bold"),
+plot.title = element_text(size = 24, face = "bold"))+
+labs(x=  element_blank(), y = "Average delay(min)" ,
+title = "Average monthly delay caused by weahter", ps = 12, cex = 1, cex.main = 1)
+Plot_1=grid.arrange(PLOT_TD_ZERO_ADV,PLOT_WD, PLOT_DD, nrow=3)
+# Dealing with the dates --------------------------------------------------
+#We start by converting the dates into full dates and thentransform them into numeric format
+data$DATE <- as.Date(with(data, paste(YEAR, MONTH, DAY,  sep="-")), "%Y-%m-%d")
+#data$DEP_HOUR <- sapply(data$DEP_HOUR, as.numeric)
+#data$DATENUM <- as.numeric(as.Date(with(data, paste(YEAR, MONTH, DAY,sep="-")), "%Y-%m-%d"))
+#Transform data as integer
+data$DEP_HOUR=as.integer(data$DEP_HOUR)
+typeof(data$DEP_HOUR)
+class(data$DEP_HOUR)
+data$DEP_MIN=as.integer(data$DEP_MIN)
+typeof(data$DEP_MIN)
+class(data$DEP_MIN)
+data$DATE_TIME_DEP=data %>%
+select(YEAR, MONTH, DAY, DEP_HOUR, DEP_MIN) %>%
+mutate(
+DEP_DATE_TIME= make_datetime(YEAR, MONTH, DAY, DEP_HOUR, DEP_MIN)
+)
+data$ARR_HOUR=as.integer(data$ARR_HOUR)
+typeof(data$ARR_HOUR)
+class(data$ARR_HOUR)
+data$ARR_MIN=as.integer(data$ARR_MIN)
+typeof(data$ARR_MIN)
+class(data$ARR_MIN)
+data$DATE_TIME_ARR=data %>%
+select(YEAR, MONTH, DAY, ARR_HOUR, ARR_MIN) %>%
+mutate(
+DEP_DATE_TIME= make_datetime(YEAR, MONTH, DAY, ARR_HOUR, ARR_MIN)
+)
+# Status of flights -------------------------------------------------------
+#add column with the status of the flight - on time if the flight has no delay - delayed if the flight has a delay.
+data$STATUS <- ifelse(data$ARRIVAL_DELAY>0, "delayed","on time")
+#Check
+sum(data$ARRIVAL_DELAY>0)
+sum(data$STATUS== "delayed")
+sum(data$ARRIVAL_DELAY==0)
+sum(data$STATUS== "on time")
+#Doing the same for the different delay causes columns to sort out teh amount of delay encountered by
+#cause of delay
+data$WEATHER_CAUSE <- ifelse(data$WEATHER_DELAY>0, "delayed", "on time")
+data$AIR_SYSTEM_CAUSE <- ifelse( data$AIR_SYSTEM_DELAY>0, "delayed", "on time")
+data$SECURITY_CAUSE <- ifelse( data$SECURITY_DELAY>0, "delayed", "on time")
+data$AIRLINE_CAUSE <- ifelse( data$AIRLINE_DELAY>0, "delayed", "on time")
+data$LATE_AIRCRAFT_CAUSE<- ifelse( data$LATE_AIRCRAFT_DELAY>0, "delayed", "on time")
+# Check if data is correct
+sum(data$WEATHER_DELAY>0)
+sum(data$WEATHER_CAUSE== "delayed")
+sum(data$AIR_SYSTEM_DELAY>0)
+sum(data$AIR_SYSTEM_CAUSE== "delayed")
+sum(data$AIRLINE_DELAY>0)
+sum(data$AIRLINE_CAUSE== "delayed")
+sum(data$LATE_AIRCRAFT_DELAY>0)
+sum(data$LATE_AIRCRAFT_CAUSE=="delayed")
+sum(data$SECURITY_DELAY>0)
+sum(data$SECURITY_CAUSE=="delayed")
+# Plotting flight statuses ------------------------------------------------
+# Plot Delayed versus on time flight
+# first Getting rid of the scientific notation
+options(scipen=999)
+PLOT_STATUS=ggplot(data = data)+
+geom_bar(mapping = aes(x=STATUS), color = "black", fill= "deepskyblue4", stat ="count")+
+labs(x = "Flight Status", y = "Number of flight" ,
+title = "Total flights delayed versus on time", ps = 12, cex = 1, cex.main = 1)+
+theme_bw()+
+theme(axis.text = element_text(size = 10),
+axis.title = element_text(size = 10, face = "bold"),
+plot.title = element_text(size = 9, face = "bold"))
+####Comment - Based on our data more than half of the flight will be delayed at arrival.
+PLOT_WEATHER=ggplot(data = data)+
+geom_bar(mapping = aes(x=WEATHER_CAUSE), color = "black", fill= "turquoise4", stat ="count")+
+#scale_y_continuous(name = "Number of flights", limits = c(0,300000))
+labs(x = "Flight status", y = "Number of flights" ,
+title = "Flights delayed due to weather", ps = 12, cex = 1, cex.main = 1)+
+theme_bw()+
+theme(axis.text = element_text(size = 10),
+axis.title = element_text(size = 10, face = "bold"),
+plot.title = element_text(size = 9, face = "bold"))
+PLOT_AIR_SYSTEM=ggplot(data = data)+
+geom_bar(mapping = aes(x=AIR_SYSTEM_CAUSE), color = "black", fill= "darkturquoise", stat ="count")+
+#scale_y_continuous(name = "Number of flights", limits = c(0,300000))
+labs(x = "Flight Status", y = "Number of flighst" ,
+title = "Flights delayed due to an Air system issue", ps = 12, cex = 1, cex.main = 1)+
+theme_bw()+
+theme(axis.text = element_text(size = 10),
+axis.title = element_text(size = 10, face = "bold"),
+plot.title = element_text(size = 9, face = "bold"))
+PLOT_SECURITY=ggplot(data = data)+
+geom_bar(mapping = aes(x=SECURITY_CAUSE), color= "black", fill= "violetred4", stat= "count")+
+labs(x = "Flight Status", y = "Number of flights",
+title = "Flights delayed due to a security issue", ps = 12, cex = 1, cex.main = 1)+
+theme_bw()+
+theme(axis.text = element_text(size = 10),
+axis.title = element_text(size = 10, face = "bold"),
+plot.title = element_text(size = 9, face = "bold"))
+PLOT_AIRLINE=ggplot(data = data)+
+geom_bar(mapping = aes(x=AIRLINE_CAUSE), color="black", fill="steelblue3", stats= "count")+
+labs(x = "Flight Status", y = "Number of flights" ,
+title = "Flights delayed due to a airline issue", ps = 12, cex = 1, cex.main = 1)+
+theme_bw()+
+theme(axis.text = element_text(size = 10),
+axis.title = element_text(size = 10, face = "bold"),
+plot.title = element_text(size = 9, face = "bold"))
+PLOT_LATE_AIRCRAFT= ggplot(data = data)+
+geom_bar(mapping = aes(x=LATE_AIRCRAFT_CAUSE), color= "black", fill="slategrey", stats="count")+
+labs(x = "Flight Status", y = "Number of flights" ,
+title = "Flights delayed due to a late aircraft arrival", ps = 12, cex = 1, cex.main = 1)+
+theme_bw()+
+theme(axis.text = element_text(size = 10),
+axis.title = element_text(size = 10, face = "bold"),
+plot.title = element_text(size = 9, face = "bold"))
+PLOT_2=grid.arrange( PLOT_STATUS,PLOT_WEATHER, PLOT_AIR_SYSTEM, PLOT_AIRLINE, PLOT_SECURITY, PLOT_LATE_AIRCRAFT, ncol = 3, nrow=2)
+# Plotting -----------------------------------------------------
+#NOw we aim at determining the amount of flight that are less than 10 min late those that are between 11-45 min late and those that are more than 45 min late
+data$DELAY_LESS_10min <- ifelse(data$ARRIVAL_DELAY<=10, "(Nearly) on time","Delayed")
+sum(data$DELAY_LESS_10min=="(Nearly) on time")
+#creating a column to do a categorization of types of delays
+data$DELAY_CATEGORIZATION=data$ARRIVAL_DELAY
+typeof(data$DELAY_CATEGORIZATION)
+as.integer(data$DELAY_CATEGORIZATION)
+typeof(data$DELAY_CATEGORIZATION)
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION>45] <- "Large delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION<15] <- "On time or Small delay"  #No clue why this does not take all the values of the table.
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION>=10 & data$DELAY_CATEGORIZATION<=45] <- "Medium delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==5] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==6] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==7] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==8] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==9] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==3] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==4] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==3] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==2] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==1] <- "On time or Small delay"
+# Now we create a plot showing the values of these 3
+counts <- table(data$DELAY_CATEGORIZATION, data$AIRLINE)
+counts
+sum(counts)
+# Airlines and delays -----------------------------------------------------
+#We notice that the airline HA does not fly through these connections thus we delete it from our analysis - we will delete this airline from our analysis
+# plot with relative numbers
+rel_counts = counts[,-7]
+Sum_counts = rel_counts[1,] + rel_counts[2,] + rel_counts[3,]
+rel_counts[1,] = rel_counts[1,] / Sum_counts
+rel_counts[2,] = rel_counts[2,] / Sum_counts
+rel_counts[3,] = rel_counts[3,] / Sum_counts
+colnames(rel_counts) = c(
+"American Airlines",
+"Alaska Airlines",
+"JetBlue Airways",
+"Delta Air Lines",
+"Atlantic Southeast Airlines",
+"Frontier Airlines",
+"American Eagle Airlines",
+"Spirit Airlines",
+"SkyWest",
+"United Airlines",
+"US Airways",
+"Virgin America",
+"Southwest Airlines")
+par(mar=c(4.1, 10.1, 3.1, 2.1), mgp=c(2.5, 1, 0), las=1)
+PLOT_AIRLINE_DELAY=barplot(rel_counts, horiz=TRUE, names.arg=c(colnames(rel_counts)),
+#cex.names= 0.8
+main="Average type of delay per airline",
+col=c("mediumpurple1","magenta4", "hotpink3"),
+legend = (rownames(rel_counts)), beside=F)+
+theme_bw()+
+theme(axis.text = element_text(size = 12),
+plot.title = element_text(size = 18, face = "bold"))
+#Airports and delays - doing the same with the origin airports ------------------------------------------------------------
+data$OR_AIR = as.character(data$ORIGIN_AIRPORT)
+counts_air = table(data$DELAY_CATEGORIZATION, data$OR_AIR)
+rel_counts_air = counts_air
+Sum_counts_air = counts_air[1,] + counts_air[2,] + counts_air[3,]
+rel_counts_air[1,] = counts_air[1,] / Sum_counts_air
+rel_counts_air[2,] = counts_air[2,] / Sum_counts_air
+rel_counts_air[3,] = counts_air[3,] / Sum_counts_air
+colnames(rel_counts_air) = c(
+"Atlanta",
+"Charlotte",
+"Denver",
+"Dallas",
+"New York",
+"Las Vegas",
+"Los Angeles",
+"Chicago",
+"Seattle",
+"San Francisco")
+PLOT_AIRPORT_DELAY=barplot(rel_counts_air, horiz=TRUE, names.arg=c(colnames(rel_counts_air)),
+cex.names=0.8,
+main="Average type of delay per origin airport",
+col=c("mediumpurple1","magenta4", "hotpink3"),
+legend = (rownames(rel_counts_air)), beside=FALSE)+
+theme_bw()+
+theme(axis.text = element_text(size = 12),
+plot.title = element_text(size = 18, face = "bold"))
+#doing the same with the day of the week  ------------------------------------------------------------
+data$day_week = as.character(data$DAY_OF_WEEK)
+counts_day_week = table(data$DELAY_CATEGORIZATION, data$day_week)
+rel_counts_day_week = counts_day_week
+Sum_counts_day_week = counts_day_week[1,] + counts_day_week[2,] + counts_day_week[3,]
+rel_counts_day_week[1,] = counts_day_week[1,] / Sum_counts_day_week
+rel_counts_day_week[2,] = counts_day_week[2,] / Sum_counts_day_week
+rel_counts_day_week[3,] = counts_day_week[3,] / Sum_counts_day_week
+colnames(rel_counts_day_week) = c(
+"Monday",
+"Tuesday",
+"Wednesday",
+"Thursday",
+"Friday",
+"Saturday",
+"Sunday")
+PLOT_DAY_WEEK_DELAY=barplot(rel_counts_day_week, horiz=TRUE, names.arg=c(colnames(rel_counts_day_week)),
+cex.names=0.8,
+main="Average type of delay per day of the week",
+col=c("mediumpurple1","magenta4", "hotpink3"),
+legend = (rownames(rel_counts_day_week)), beside=FALSE)+
+theme_bw()+
+theme(axis.text = element_text(size = 12),
+plot.title = element_text(size = 18, face = "bold"))
+#doing the same with the months  ------------------------------------------------------------
+data$month = as.character(data$MONTH)
+counts_month = table(data$DELAY_CATEGORIZATION, data$month)
+rel_counts_month = counts_month
+Sum_counts_month = counts_month[1,] + counts_month[2,] + counts_month[3,]
+rel_counts_month[1,] = counts_month[1,] / Sum_counts_month
+rel_counts_month[2,] = counts_month[2,] / Sum_counts_month
+rel_counts_month[3,] = counts_month[3,] / Sum_counts_month
+list = c("1","2","3","4","5","6","7","8","9","11","12")
+rel_counts_month[,list]
+colnames(rel_counts_month) = c(
+"January",
+"February",
+"March",
+"April",
+"May",
+"June",
+"July",
+"August",
+"September",
+"November",
+"December")
+PLOT_MONTH_DELAY=barplot(rel_counts_month, horiz=TRUE, names.arg=c(colnames(rel_counts_month)),
+cex.names=0.8,
+main="Average type of delay per month",
+col=c("mediumpurple1","magenta4", "hotpink3"),
+legend = (rownames(counts)), beside=FALSE)+
+theme_bw()+
+theme(axis.text = element_text(size = 12),
+plot.title = element_text(size = 18, face = "bold"))
+#plotting the distribution of the departure delays ----------------------------------------------
+ggplot(data) +
+geom_histogram(mapping = aes(x = DEPARTURE_DELAY, y = (..count..)/sum(..count..)),
+fill = "lightblue", color = "black",
+binwidth = 1) +
+xlim(c(-20,120)) +
+labs(x = "Delay (minutes)", y = "",
+title = "Distribution of departure delays") +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_rect(fill = "white",
+colour = "black",
+size = 0.5, linetype = "solid"))
+# new data for new plots --------------------------------------------------
+#Now it's worthy to start using new data in order to analyze humidity, pressure
+# and holidays as well as to have clean data about arrival delays
+rm(list=ls())
+load("Cleaned data.RData")
+data$TAIL_NUMBER <- NULL
+data$TAXI_OUT <- NULL
+data$ELAPSED_TIME <- NULL
+data$TAXI_IN <- NULL
+data$CANCELLED <- NULL
+data$SCHEDULED_TIME <- NULL
+data$SCHEDULED_ARRIVAL <- NULL
+#plotting arrival delays
+ggplot(data) +
+geom_histogram(mapping = aes(x = ARRIVAL_DELAY, y = (..count..)/sum(..count..)),
+fill = "lightblue", color = "black",
+binwidth = 1) +
+xlim(c(-60,180)) +
+labs(x = "Delay (minutes)", y = "" ,
+title = "Distribution of arrival delays") +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_rect(fill = "white",
+colour = "black",
+size = 0.5, linetype = "solid"))
+#analyze the correlation between departure delays and arrival delays
+ggplot(data) +
+geom_point(aes(DEPARTURE_DELAY, ARRIVAL_DELAY), color = "steelblue2", size=0.1) +
+xlim(c(-60,300)) + ylim(c(-60,300)) +
+labs(x = "Departure delay (minutes)", y = "Arrival delay (minutes)" ,
+title = "Strong relationship between departure and arrival delays",
+subtitle = "") +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_rect(fill = "white",
+colour = "white",
+size = 0.5, linetype = "solid")) +
+geom_vline(xintercept = 0, color="black", size=0.1 ) +
+geom_hline(yintercept = 0, color="black", size=0.1 ) +
+geom_smooth(aes(DEPARTURE_DELAY, ARRIVAL_DELAY), color = "red3") +
+theme(axis.title.y = element_text(margin = margin(t = 0, r = 15, b = 0, l = 0)),
+axis.title.x = element_text(hjust = 0.4, margin = margin(t = 15, r = 0, b = 0, l = 0)))
+#analyze the correlation between wind speed and departure delays
+ggplot(data) +
+geom_point(aes(DEPARTURE_DELAY, DEP_Humidity), color = "steelblue2", size=0.2) +
+ylim(c(0,100)) + xlim(c(-15,150)) +
+labs( x = "Departure delay (minutes)", y = "Relative humidity (%)" ,
+title = "No apparent relationship between humidity and departure delays",
+subtitle = "") +
+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_rect(fill = "white",
+colour = "white",
+size = 0.5, linetype = "solid")) +
+geom_vline(xintercept = 0, color="black", size=0.1 ) +
+geom_hline(yintercept = 0, color="black", size=0.1 ) +
+theme(axis.title.y = element_text(margin = margin(t = 0, r = 15, b = 0, l = 0)),
+axis.title.x = element_text(hjust = 0.4, margin = margin(t = 15, r = 0, b = 0, l = 0)))
+#using the previous code to divide the data into three categories ("On time or small delay", "Medium delay" and "Large delay")
+data$DELAY_LESS_10min <- ifelse(data$ARRIVAL_DELAY<=10, "(Nearly) on time","Delayed")
+sum(data$DELAY_LESS_10min=="(Nearly) on time")
+#data$DELAY_MORE_45min <- ifelse(data$ARRIVAL_DELAY>45, " > 45 min late","Other Status")
+#sum(data$DELAY_MORE_45min==" > 45 min late")
+#data$DELAY_BETWEEN_1145min <- ifelse(data$ARRIVAL_DELAY<=45 & data$ARRIVAL_DELAY>10, "11-45 min late","Other Status")
+#sum(data$DELAY_BETWEEN_1145min=="11-45 min late")
+data$DELAY_CATEGORIZATION=data$ARRIVAL_DELAY
+typeof(data$DELAY_CATEGORIZATION)
+as.integer(data$DELAY_CATEGORIZATION)
+typeof(data$DELAY_CATEGORIZATION)
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION>45] <- "Large delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION<10] <- "On time or Small delay"  #No clue why this doies not take all the values of the table.
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION>=10 & data$DELAY_CATEGORIZATION<=45] <- "Medium delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==5] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==6] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==7] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==8] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==9] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==3] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==4] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==3] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==2] <- "On time or Small delay"
+data$DELAY_CATEGORIZATION[data$DELAY_CATEGORIZATION==1] <- "On time or Small delay"
+# Now we create a plot for the wind speed with the same method used previously
+counts <- table(data$DELAY_CATEGORIZATION, data$DEP_wind_speed)
+rel_counts = counts [,1:15]
+#the other columns are eliminated because the small number of observation implies a potential bias
+Sum_counts = rel_counts[1,] + rel_counts[2,] + rel_counts[3,]
+rel_counts[1,] = rel_counts[1,] / Sum_counts
+rel_counts[2,] = rel_counts[2,] / Sum_counts
+rel_counts[3,] = rel_counts[3,] / Sum_counts
+par(mar=c(4.1, 10.1, 3.1, 2.1), mgp=c(2, 0.7, 0), las=1)
+PLOT_Wind_DELAY=barplot(rel_counts, names.arg=c(colnames(rel_counts)),
+cex.names=0.8,
+main="Average type of delay per wind speed",
+xlab = "Relative wind speed",
+col=c("mediumpurple1","magenta4", "hotpink3"),
+legend = (rownames(rel_counts)), beside=F,
+args.legend = list(x=14, y= 0.93))+
+theme_bw()+
+theme(axis.text = element_text(size = 12),
+plot.title = element_text(size = 18, face = "bold"))
+#doing the same with the federal holidays
+counts_hol = table(data$DELAY_CATEGORIZATION, data$Holidays)
+rel_counts_hol = counts_hol
+Sum_counts_hol = counts_hol[1,] + counts_hol[2,] + counts_hol[3,]
+rel_counts_hol[1,] = counts_hol[1,] / Sum_counts_hol
+rel_counts_hol[2,] = counts_hol[2,] / Sum_counts_hol
+rel_counts_hol[3,] = counts_hol[3,] / Sum_counts_hol
+colnames(rel_counts_hol) = c("No Holiday", "Holiday")
+par(mar=c(4.1, 15.1, 5.1, 10.1), mgp=c(2, 0.7, 0), las=1)
+PLOT_Hol_DELAY=barplot(rel_counts_hol, names.arg=c(colnames(rel_counts_hol)),
+cex.names=0.8,
+main="Average type of delay in case of holiday",
+col=c("mediumpurple1","magenta4", "hotpink3"),
+legend = (rownames(rel_counts_hol)), beside=FALSE,
+args.legend = list(x=-0.8, y= 0.55))+
+theme_bw()+
+theme(axis.text = element_text(size = 12),
+plot.title = element_text(size = 18, face = "bold"))
+#finally the same with humidity
+data$rel_hum = cut(data$DEP_Humidity,
+breaks = c(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100),
+labels = c("1-10", "11-20", "21-30", "31-40", "41-50",
+"51-60", "61-70", "71-80", "81-90", "91-100"),
+include.lowest = TRUE)
+counts_hum = table(data$DELAY_CATEGORIZATION, data$rel_hum)
+rel_counts_hum = counts_hum
+Sum_counts_hum = counts_hum[1,] + counts_hum[2,] + counts_hum[3,]
+rel_counts_hum[1,] = counts_hum[1,] / Sum_counts_hum
+rel_counts_hum[2,] = counts_hum[2,] / Sum_counts_hum
+rel_counts_hum[3,] = counts_hum[3,] / Sum_counts_hum
+PLOT_Humidity_DELAY=barplot(rel_counts_hum, names.arg=c(colnames(rel_counts_hum)),
+cex.names=0.8,
+main="Average type of delay per humidity",
+xlab = "Humidity (%)",
+col=c("mediumpurple1","magenta4", "hotpink3"),
+legend = (rownames(rel_counts_hum)), beside=FALSE,
+args.legend = list(x=-4, y= 0.93))+
+theme_bw()+
+theme(axis.text = element_text(size = 12),
+plot.title = element_text(size = 18, face = "bold"))
+PLOT_Humidity_DELAY=barplot(rel_counts_hum, names.arg=c(colnames(rel_counts_hum)),
+cex.names=0.8,
+main="Average type of delay per humidity",
+xlab = "Humidity (%)",
+col=c("mediumpurple1","magenta4", "hotpink3"),
+legend = (rownames(rel_counts_hum)), beside=FALSE,
+args.legend = list(x=5, y= 0.93))+
+theme_bw()+
+theme(axis.text = element_text(size = 12),
+plot.title = element_text(size = 18, face = "bold"))
+PLOT_Humidity_DELAY=barplot(rel_counts_hum, names.arg=c(colnames(rel_counts_hum)),
+cex.names=0.8,
+main="Average type of delay per humidity",
+xlab = "Humidity (%)",
+col=c("mediumpurple1","magenta4", "hotpink3"),
+legend = (rownames(rel_counts_hum)), beside=FALSE,
+args.legend = list(x=8, y= 0.93))+
+theme_bw()+
+theme(axis.text = element_text(size = 12),
+plot.title = element_text(size = 18, face = "bold"))
+PLOT_Humidity_DELAY=barplot(rel_counts_hum, names.arg=c(colnames(rel_counts_hum)),
+cex.names=0.8,
+main="Average type of delay per humidity",
+xlab = "Humidity (%)",
+col=c("mediumpurple1","magenta4", "hotpink3"),
+legend = (rownames(rel_counts_hum)), beside=FALSE,
+args.legend = list(x=9, y= 0.93))+
+theme_bw()+
+theme(axis.text = element_text(size = 12),
+plot.title = element_text(size = 18, face = "bold"))
+Sum_counts = rel_counts[1,] + rel_counts[2,] + rel_counts[3,]
+rel_counts[1,] = rel_counts[1,] / Sum_counts
+rel_counts[2,] = rel_counts[2,] / Sum_counts
+rel_counts[3,] = rel_counts[3,] / Sum_counts
+par(mar=c(4.1, 10.1, 3.1, 2.1), mgp=c(2, 0.7, 0), las=1)
+PLOT_Wind_DELAY=barplot(rel_counts, names.arg=c(colnames(rel_counts)),
+cex.names=0.8,
+main="Average type of delay per wind speed",
+xlab = "Relative wind speed",
+col=c("mediumpurple1","magenta4", "hotpink3"),
+legend = (rownames(rel_counts)), beside=F,
+args.legend = list(x=14, y= 0.93))+
+theme_bw()+
+theme(axis.text = element_text(size = 12),
+plot.title = element_text(size = 18, face = "bold"))
+counts_hol = table(data$DELAY_CATEGORIZATION, data$Holidays)
+rel_counts_hol = counts_hol
+Sum_counts_hol = counts_hol[1,] + counts_hol[2,] + counts_hol[3,]
+rel_counts_hol[1,] = counts_hol[1,] / Sum_counts_hol
+rel_counts_hol[2,] = counts_hol[2,] / Sum_counts_hol
+rel_counts_hol[3,] = counts_hol[3,] / Sum_counts_hol
+colnames(rel_counts_hol) = c("No Holiday", "Holiday")
+par(mar=c(4.1, 15.1, 5.1, 10.1), mgp=c(2, 0.7, 0), las=1)
+counts_hol = table(data$DELAY_CATEGORIZATION, data$Holidays)
+rel_counts_hol = counts_hol
+Sum_counts_hol = counts_hol[1,] + counts_hol[2,] + counts_hol[3,]
+rel_counts_hol[1,] = counts_hol[1,] / Sum_counts_hol
+rel_counts_hol[2,] = counts_hol[2,] / Sum_counts_hol
+rel_counts_hol[3,] = counts_hol[3,] / Sum_counts_hol
+colnames(rel_counts_hol) = c("No Holiday", "Holiday")
+par(mar=c(4.1, 15.1, 5.1, 10.1), mgp=c(2, 0.7, 0), las=1)
+PLOT_Hol_DELAY=barplot(rel_counts_hol, names.arg=c(colnames(rel_counts_hol)),
+cex.names=0.8,
+main="Average type of delay in case of holiday",
+col=c("mediumpurple1","magenta4", "hotpink3"),
+legend = (rownames(rel_counts_hol)), beside=FALSE,
+args.legend = list(x=-0.8, y= 0.55))+
+theme_bw()+
+theme(axis.text = element_text(size = 12),
+plot.title = element_text(size = 18, face = "bold"))
