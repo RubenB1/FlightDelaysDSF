@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1543759861949.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3651772855",
+    "id" : "E81B1484",
+    "lastKnownWriteTime" : 1543760106,
+    "last_content_update" : 1543760104101,
+    "path" : "F:/Regression Models/00 Data Cleaning.R",
+    "project_path" : "00 Data Cleaning.R",
+    "properties" : {
+        "cursorPosition" : "21,0",
+        "scrollLine" : "5"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
